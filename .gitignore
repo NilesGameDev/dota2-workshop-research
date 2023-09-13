@@ -1,7 +1,9 @@
-game/tools_thumbnail_cache.bin
-game/maps
-game/materials
-game/models
-game/panorama
-game/particles
+**/content/maps/*.vmap
+
+**/game/tools_thumbnail_cache.bin
+**/game/maps
+**/game/materials
+**/game/models
+**/game/panorama
+**/game/particles
 
