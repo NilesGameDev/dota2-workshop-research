@@ -1,0 +1,6 @@
+{
+    "Lua.diagnostics.globals": [
+        "DOTA_UNIT_CAP_MOVE_FLY",
+        "DOTA_UNIT_CAP_MOVE_GROUND"
+    ]
+}
