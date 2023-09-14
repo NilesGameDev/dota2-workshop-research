@@ -1,3 +1,6 @@
+**/.vscode
+
+
 **/content/maps/*.vmap
 
 **/game/tools_thumbnail_cache.bin
