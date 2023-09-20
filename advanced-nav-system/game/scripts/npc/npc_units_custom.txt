@@ -89,6 +89,10 @@
 			"XPGain"					"15"
 		}
 	}
+	"npc_dota_bridge_point" 
+	{
+		"BaseClass"					"npc_dota_building"
+	}
 	"npc_dota_bridge"
 	{
 		"BaseClass"					"npc_dota_building"

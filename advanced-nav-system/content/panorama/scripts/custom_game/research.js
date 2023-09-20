@@ -58,9 +58,12 @@ function OnLeftButtonPressed() {
     var targetIndex = GetMouseCastTarget();
     if (targetIndex === -1) {
         $.Msg("Moving ground at cursor position: ", GameUI.GetCursorPosition());
+        var worldPos = GameUI.GetScreenWorldPosition(GameUI.GetCursorPosition());
         var sendData = { 
             "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
-            "TargetPoint": GameUI.GetCursorPosition()
+            "TargetPointX": worldPos[0],
+            "TargetPointY": worldPos[1],
+            "TargetPointZ": worldPos[2],
         };
         GameEvents.SendCustomGameEventToServer("PanoramaClickEventTest", sendData);
     } else {
