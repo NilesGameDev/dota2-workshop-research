@@ -2,6 +2,8 @@ if (GameSetup == nil) then
     GameSetup = class({})
 end
 
+require("game_event")
+
 --nil will not force a hero selection
 local forceHero = "antimage"
 
@@ -38,8 +40,26 @@ function GameSetup:init()
             GameMode:SetCustomGameForceHero(forceHero)
         end
 
-        --listen to game state event
+        --link modifiers
+        self:LinkModifiers()
+
+        --register custom events
+        self:RegisterCustomEvents()
     else --release build
         --put your rules here
     end
+end
+
+function GameSetup:LinkModifiers()
+    LinkLuaModifier("modifier_bridge_crossing", LUA_MODIFIER_MOTION_NONE)
+    LinkLuaModifier("modifier_static_object", LUA_MODIFIER_MOTION_NONE)
+end
+
+function GameSetup:RegisterCustomEvents()
+    CustomGameEventManager:RegisterListener("PanoramaClickPlatformEvent", function(...)
+        return GameEventManager:OnPanoramaClickPlatformEvent(...)
+    end)
+    CustomGameEventManager:RegisterListener("PanoramaClickEvent", function(...)
+        return GameEventManager:OnPanoramaClickEvent(...)
+    end)
 end

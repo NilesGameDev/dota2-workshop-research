@@ -54,10 +54,8 @@ function BeginMoveState() {
 }
 
 function OnLeftButtonPressed() {
-    $.Msg("Screen position: ", GameUI.GetScreenWorldPosition(GameUI.GetCursorPosition()));
     var targetIndex = GetMouseCastTarget();
     if (targetIndex === -1) {
-        $.Msg("Moving ground at cursor position: ", GameUI.GetCursorPosition());
         var worldPos = GameUI.GetScreenWorldPosition(GameUI.GetCursorPosition());
         var sendData = { 
             "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
@@ -65,15 +63,15 @@ function OnLeftButtonPressed() {
             "TargetPointY": worldPos[1],
             "TargetPointZ": worldPos[2],
         };
-        GameEvents.SendCustomGameEventToServer("PanoramaClickEventTest", sendData);
+        
+        GameEvents.SendCustomGameEventToServer("PanoramaClickEvent", sendData);
     } else {
-        $.Msg("Current position of the bridge: ", Entities.GetAbsOrigin(targetIndex));
         var sendData = { 
             "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
             "BridgeIndex": targetIndex
         };
-        $.Msg("Current send data: ", sendData);
-        GameEvents.SendCustomGameEventToServer("PanoramaClickEvent", sendData);
+
+        GameEvents.SendCustomGameEventToServer("PanoramaClickPlatformEvent", sendData);
     }
 }
 

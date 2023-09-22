@@ -4,21 +4,14 @@ Layer0
 {
 	shader "global_lit_simple.vfx"
 
-	//---- Lit Translucent ----
-	F_ALLOW_LIGHTING_ON_TRANSLUCENT 1
-
-	//---- Translucent ----
-	F_TRANSLUCENT 1
+	//---- 2-Sided Rendering ----
+	F_RENDER_BACKFACES 1
 
 	//---- Color ----
 	g_vColorTint "[0.392157 0.392157 0.368627 1.000000]"
 	g_vTexCoordOffset "[0.000 0.000]"
 	g_vTexCoordScale "[1.000 1.000]"
 	TextureColor "materials/default/default_color.tga"
-
-	//---- Translucent ----
-	g_flOpacityScale "1.000"
-	TextureTranslucency "[1.000000 1.000000 1.000000 0.000000]"
 
 	Attributes
 	{
@@ -30,13 +23,24 @@ Layer0
 		PhysicsSurfaceProperties "concrete"
 	}
 
+	UnusedVariables
+	{
+		"g_flAlphaTestReference" "0.238"
+		"g_flAlphaAnglePower" "1"
+		"g_vColorTint2" "[1.000000 1.000000 1.000000 0.000000]"
+		"TextureTintMask" ""
+		"g_flScrollUvSpeed" "1"
+		"g_vScrollUvDirection" "[0.000 1.000]"
+		"TextureScrollSpeed" ""
+		"g_flOpacityScale" "0.325"
+		"g_flOverbrightFactor" "1"
+		"TextureTranslucency" "[1.000000 1.000000 1.000000 0.000000]"
+	}
+
 
 	VariableState
 	{
 		"Color"
-		{
-		}
-		"Translucent"
 		{
 		}
 	}

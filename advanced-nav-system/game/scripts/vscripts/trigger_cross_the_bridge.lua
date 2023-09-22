@@ -22,7 +22,7 @@ function ThinkFlyEntity()
     end
 
     local currentPos = targetActivator:GetOrigin()
-    targetActivator:SetOrigin(Vector(currentPos.x, currentPos.y, 430)) -- Perhaps find a way to extract the bridge height to add to unit z-axis
+    targetActivator:SetOrigin(Vector(currentPos.x, currentPos.y, 420)) -- Perhaps find a way to extract the bridge height to add to unit z-axis
 
     return 0.03 -- approximate per frame call
 end
