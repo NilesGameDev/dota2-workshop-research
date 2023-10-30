@@ -7,67 +7,68 @@ function AdvancedNavSystem:IssueMoveToTargetPoint(player, targetPoint)
         return
     end
 
-    local playerPos = player:GetAbsOrigin()
+    DebugDrawSphere(targetPoint, Vector(167, 66, 245), 0, 16, true, 5)
+    targetPoint = SnapPosition(targetPoint)
+    local playerPos = SnapPosition(player:GetAbsOrigin())
     local distanceToTarget = GridNav:FindPathLength(playerPos, targetPoint)
-    local bridgePoints = Entities:FindAllByClassnameWithin("npc_dota_building", playerPos, distanceToTarget)
-    local nearbyBridges = {}
-    local bridgeEntToMoveThrough = nil
-
-    for _, infoTarget in pairs(bridgePoints) do
-        if (infoTarget:GetUnitName() == "npc_dota_bridge_point") then
-            local bridge = infoTarget:GetMoveParent()
-            nearbyBridges[bridge:entindex()] = bridge
-        end
-    end
-
     print("GridNav distance: ", distanceToTarget)
+    print("GridNav traversible: ", GridNav:IsTraversable(targetPoint))
+    print("GridNav can find path: ", GridNav:CanFindPath(playerPos, targetPoint))
+    print("GridNav remaining path: ", player:GetRemainingPathLength())
 
-    for _, bridge in pairs(nearbyBridges) do
-        -- For now, let's assume that we always have only 2 info target of a bridge
-        local linkedInfoTarget = bridge:GetChildren()
-        local infoTarget1 = linkedInfoTarget[1]
-        local infoTarget2 = linkedInfoTarget[2]
-        local infoTarget1Pos = infoTarget1:GetAbsOrigin()
-        local infoTarget2Pos = infoTarget2:GetAbsOrigin()
+    -- TODO: We should improve this below code to find nearest travel distance, not nearest point
+    -- local nearestPathCorner = Entities:FindByClassnameNearest("path_corner", playerPos, distanceToTarget)
+    -- if (nearestPathCorner == nil) then
+    --     player:MoveToPosition(targetPoint)
+    --     return
+    -- end
 
-        local distanceBetween = Distance(infoTarget1Pos, infoTarget2Pos)
-        local distancePointOneToPlayer = GridNav:FindPathLength(playerPos, infoTarget1Pos)
-        local distancePointTwoToPlayer = GridNav:FindPathLength(playerPos, infoTarget2Pos)
+    -- local linkedPathCorner = self:FindLinkedPathCorner(nearestPathCorner)
+    -- if (linkedPathCorner == nil) then
+    --     player:MoveToPosition(targetPoint)
+    --     return
+    -- end
 
-        local totalDistance = 0
-        if (distancePointOneToPlayer <= distancePointTwoToPlayer) then
-            totalDistance = distancePointOneToPlayer + distanceBetween +
-                GridNav:FindPathLength(infoTarget2Pos, targetPoint)
-        else
-            totalDistance = distancePointTwoToPlayer + distanceBetween +
-                GridNav:FindPathLength(infoTarget1Pos, targetPoint)
-        end
+    -- local nearestPos = nearestPathCorner:GetAbsOrigin()
+    -- local linkedPos = linkedPathCorner:GetAbsOrigin()
+    -- local distanceOfTwoPoints = Distance(nearestPos, linkedPos)
+    -- local totalPathDistance = GridNav:FindPathLength(playerPos, nearestPos)
+    --     + GridNav:FindPathLength(linkedPos, targetPoint)
+    --     + distanceOfTwoPoints
+    -- local testPathDistance = GridNav:FindPathLength(playerPos, linkedPos)
+    --     + GridNav:FindPathLength(nearestPos, targetPoint)
+    --     + distanceOfTwoPoints
 
-        print("Distance through bridge:", totalDistance)
-
-        if (totalDistance < distanceToTarget) then
-            bridgeEntToMoveThrough = bridge
-        end
-    end
-
-    if (bridgeEntToMoveThrough ~= nil) then
-        print("Move through bridge")
-        MoveToPlatform(player, bridgeEntToMoveThrough)
-        local moveOrder = {
-            UnitIndex = player:entindex(),
-            OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
-            Position = targetPoint,
-            Queue = 2
-        }
-        ExecuteOrderFromTable(moveOrder)
-    else
-        local moveOrder = {
-            UnitIndex = player:entindex(),
-            OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
-            Position = targetPoint,
-        }
-        ExecuteOrderFromTable(moveOrder)
-    end
+    -- print("Nearest pos", nearestPos)
+    -- print("Linked pos", linkedPos)
+    -- print("Distance from player to nearest: ", GridNav:FindPathLength(playerPos, nearestPos))
+    -- print("Distance of two points", distanceOfTwoPoints)
+    -- print("Distance from linked to target: ", GridNav:FindPathLength(linkedPos, targetPoint))
+    -- print("Total distance", totalPathDistance)
+    -- print("Total test distance (reversed)", testPathDistance)
+    -- if (totalPathDistance < distanceToTarget) then
+    --     -- TODO: find a way to stop all queued action before executing the below orders
+    --     ExecuteOrderFromTable({
+    --         UnitIndex = player:entindex(),
+    --         OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+    --         Position = nearestPos,
+    --         Queue = 0
+    --     })
+    --     ExecuteOrderFromTable({
+    --         UnitIndex = player:entindex(),
+    --         OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+    --         Position = linkedPos,
+    --         Queue = 1
+    --     })
+    --     ExecuteOrderFromTable({
+    --         UnitIndex = player:entindex(),
+    --         OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+    --         Position = targetPoint,
+    --         Queue = 2
+    --     })
+    -- else
+    --     player:MoveToPosition(targetPoint)
+    -- end
 end
 
 function AdvancedNavSystem:MoveToPlatform(player, bridgeEnt)
@@ -120,6 +121,16 @@ function AdvancedNavSystem:FindClosestBridgeInfoTarget(player, children)
     return target
 end
 
+function AdvancedNavSystem:FindLinkedPathCorner(pathCorner)
+    -- local nextTargetId = pathCorner:Attribute_GetIntValue("NextStopTargetId", 0)
+    -- if (nextTargetId == 0) then
+    --     return nil
+    -- end
+
+    -- local nextTargetName = "path" .. tostring(nextTargetId)
+    return Entities:FindByTarget(nil, pathCorner:GetName())
+end
+
 -- Refactor below function to different file?
 function Distance(vector1, vector2)
     local x = vector1.x - vector2.x
@@ -127,4 +138,13 @@ function Distance(vector1, vector2)
     local z = vector1.z - vector2.z
 
     return math.sqrt(x * x + y * y + z * z);
+end
+
+function SnapPosition(position)
+    local gridPosX = GridNav:WorldToGridPosX(position.x)
+    local gridPosY = GridNav:WorldToGridPosY(position.y)
+    local newX = GridNav:GridPosToWorldCenterX(gridPosX)
+    local newY = GridNav:GridPosToWorldCenterY(gridPosY)
+
+    return Vector(newX, newY, position.Z)
 end

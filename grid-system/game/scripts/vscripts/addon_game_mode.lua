@@ -1,11 +1,11 @@
 -- Generated from template
 
 if CAddonTemplateGameMode == nil then
-    CAddonTemplateGameMode = class({})
+	CAddonTemplateGameMode = class({})
 end
 
-function Precache(context)
-    --[[
+function Precache( context )
+	--[[
 		Precache things we know we'll use.  Possible file types include (but not limited to):
 			PrecacheResource( "model", "*.vmdl", context )
 			PrecacheResource( "soundfile", "*.vsndevts", context )
@@ -14,28 +14,26 @@ function Precache(context)
 	]]
 end
 
-require("entities.ent_new_path_corner")
 require("game_setup")
-
 
 -- Create the game mode when we activate
 function Activate()
-    GameRules.AddonTemplate = CAddonTemplateGameMode()
-    GameRules.AddonTemplate:InitGameMode()
+	GameRules.AddonTemplate = CAddonTemplateGameMode()
+	GameRules.AddonTemplate:InitGameMode()
 end
 
 function CAddonTemplateGameMode:InitGameMode()
-    print("Template addon is loaded.")
-    GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 2)
-    GameSetup:init()
+	print( "Template addon is loaded." )
+	GameRules:GetGameModeEntity():SetThink( "OnThink", self, "GlobalThink", 2 )
+	GameSetup:init()
 end
 
 -- Evaluate the state of the game
 function CAddonTemplateGameMode:OnThink()
-    if GameRules:State_Get() == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
-        --print( "Template addon script is running." )
-    elseif GameRules:State_Get() >= DOTA_GAMERULES_STATE_POST_GAME then
-        return nil
-    end
-    return 1
+	if GameRules:State_Get() == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+		--print( "Template addon script is running." )
+	elseif GameRules:State_Get() >= DOTA_GAMERULES_STATE_POST_GAME then
+		return nil
+	end
+	return 1
 end

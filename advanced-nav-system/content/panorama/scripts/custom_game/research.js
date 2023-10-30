@@ -1,7 +1,6 @@
 const CONSUME_EVENT = true;
 const CONTINUE_PROCESSING_EVENT = false;
 
-
 function GetMouseCastTarget() {
     var mouseEntities = GameUI.FindScreenEntities(GameUI.GetCursorPosition());
     var localHeroIndex = Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer());
@@ -56,12 +55,13 @@ function BeginMoveState() {
 function OnLeftButtonPressed() {
     var targetIndex = GetMouseCastTarget();
     if (targetIndex === -1) {
-        var worldPos = GameUI.GetScreenWorldPosition(GameUI.GetCursorPosition());
+        var cursorPos = GameUI.GetCursorPosition()
+        var worldPos = GameUI.GetScreenWorldPosition(cursorPos);
         var sendData = { 
             "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
-            "TargetPointX": worldPos[0],
-            "TargetPointY": worldPos[1],
-            "TargetPointZ": worldPos[2],
+            "TargetPoint": worldPos,
+            "CursorOrigin": GameUI.GetCursorPosition(),
+            "ScreenCursorOrigin": Game.ScreenXYToWorld(cursorPos[0], cursorPos[1])
         };
         
         GameEvents.SendCustomGameEventToServer("PanoramaClickEvent", sendData);

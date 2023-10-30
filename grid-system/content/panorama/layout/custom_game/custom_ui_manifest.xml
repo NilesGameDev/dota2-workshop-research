@@ -1,0 +1,8 @@
+<root>
+    <script>
+	</script>
+    
+	<Panel>
+		<CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/grid-system-main.xml" />
+	</Panel>
+</root>

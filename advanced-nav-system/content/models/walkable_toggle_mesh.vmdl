@@ -11,6 +11,7 @@
 				[
 					{
 						_class = "RenderMeshFile"
+						name = "test"
 						filename = "models\\dmx\\mesh\\walkable_toggle_mesh.dmx"
 						import_scale = 1.0
 						import_filter = 
@@ -33,6 +34,63 @@
 							{
 								from = "materials/demo.vmat"
 								to = "materials/tools/toolsclip.vmat"
+							},
+						]
+					},
+				]
+			},
+			{
+				_class = "WeightListList"
+				children = 
+				[
+					{
+						_class = "WeightList"
+						name = "test"
+						default_weight = 0.0
+						weights = [  ]
+						master_morph_weight = -1.0
+						morph_weights = [  ]
+					},
+				]
+			},
+			{
+				_class = "Skeleton"
+				children = 
+				[
+					{
+						_class = "Bone"
+						name = "root"
+						origin = [ 0.0, 0.0, 0.0 ]
+						angles = [ 0.0, 0.0, 0.0 ]
+						do_not_discard = true
+					},
+					{
+						_class = "DefineBone"
+						name = "test"
+						origin = [ 0.0, 0.0, 0.0 ]
+						angles = [ 0.0, 0.0, 0.0 ]
+						do_not_discard = true
+						parent_bone = "root"
+					},
+				]
+			},
+			{
+				_class = "HitboxSetList"
+				children = 
+				[
+					{
+						_class = "HitboxSet"
+						name = "cube"
+						children = 
+						[
+							{
+								_class = "Hitbox"
+								parent_bone = "root"
+								surface_property = ""
+								translation_only = false
+								group_id = 0
+								hitbox_mins = [ -89.336571, -117.307968, -22.7953 ]
+								hitbox_maxs = [ 89.336571, 117.307968, 22.7953 ]
 							},
 						]
 					},
