@@ -6,49 +6,15 @@
 		children = 
 		[
 			{
-				_class = "RenderMeshList"
-				children = 
-				[
-					{
-						_class = "RenderMeshFile"
-						name = "bridge"
-						filename = "models\\dmx\\mesh\\bridge.dmx"
-						import_scale = 1.0
-						import_filter = 
-						{
-							exclude_by_default = false
-							exception_list = [  ]
-						}
-					},
-				]
-			},
-			{
-				_class = "MaterialGroupList"
-				children = 
-				[
-					{
-						_class = "MaterialGroup"
-						name = "walkable"
-						remaps = 
-						[
-							{
-								from = "materials/dev/reflectivity_30.vmat"
-								to = "materials/tools/toolsclip.vmat"
-							},
-						]
-					},
-				]
-			},
-			{
 				_class = "Skeleton"
 				children = 
 				[
 					{
 						_class = "Bone"
-						name = "cube"
+						name = "root"
 						origin = [ 0.0, 0.0, 0.0 ]
-						angles = [ -0.0, 90.0, 90.0 ]
-						do_not_discard = true
+						angles = [ 0.0, 0.0, 0.0 ]
+						do_not_discard = false
 					},
 				]
 			},
@@ -63,61 +29,40 @@
 						[
 							{
 								_class = "Hitbox"
-								parent_bone = "cube"
+								parent_bone = "root"
 								surface_property = ""
 								translation_only = false
 								group_id = 0
-								hitbox_mins = [ -1082.041382, -188.824127, -195.806946 ]
-								hitbox_maxs = [ 572.124634, 188.824127, 195.806946 ]
+								hitbox_mins = [ -257.146179, -133.346008, -78.509193 ]
+								hitbox_maxs = [ 257.146179, 133.346008, 17.13871 ]
 							},
 						]
 					},
 				]
 			},
 			{
-				_class = "AnimationList"
+				_class = "RenderMeshList"
 				children = 
 				[
 					{
-						_class = "AnimFile"
-						name = "hitbox_cube"
-						activity_name = ""
-						activity_weight = 1
-						weight_list_name = ""
-						fade_in_time = 0.2
-						fade_out_time = 0.2
-						looping = false
-						delta = false
-						worldSpace = false
-						hidden = false
-						anim_markup_ordered = false
-						disable_compression = false
-						animgraph_additive = false
-						source_filename = "models/fbx/hitbox-cube.fbx"
-						import_bone_scales = false
-						start_frame = -1
-						end_frame = -1
-						framerate = -1.0
-						reverse = false
-					},
-					{
-						_class = "AnimBindPose"
-						name = "bindPose"
-						activity_name = ""
-						activity_weight = 1
-						weight_list_name = ""
-						fade_in_time = 0.2
-						fade_out_time = 0.2
-						looping = false
-						delta = false
-						worldSpace = false
-						hidden = false
-						anim_markup_ordered = false
-						disable_compression = false
-						animgraph_additive = false
+						_class = "RenderMeshFile"
+						name = "stone_bridge"
+						children = 
+						[
+							{
+								_class = "SkinToSingleBone"
+								bone_name = "root"
+							},
+						]
+						filename = "models/fbx/stone_bridge.fbx"
+						import_scale = 1.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
 					},
 				]
-				default_root_bone_name = ""
 			},
 		]
 		model_archetype = ""

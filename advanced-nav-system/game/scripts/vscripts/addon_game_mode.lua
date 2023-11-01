@@ -14,9 +14,7 @@ function Precache(context)
 	]]
 end
 
-require("entities.ent_new_path_corner")
 require("game_setup")
-
 
 -- Create the game mode when we activate
 function Activate()
