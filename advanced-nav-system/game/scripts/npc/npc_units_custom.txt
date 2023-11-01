@@ -89,6 +89,35 @@
 			"XPGain"					"15"
 		}
 	}
+	"npc_dota_nav_agent" 
+	{
+		// General
+		//----------------------------------------------------------------
+		"Model"						"models/navagent/capsule_agent.vmdl"	// Model.
+		"BaseClass"					"npc_dota_creature"
+
+		// Attack
+		//----------------------------------------------------------------
+		"AttackCapabilities"		"DOTA_UNIT_CAP_NO_ATTACK"
+
+		// Movement
+		//----------------------------------------------------------------
+		"MovementCapabilities"		"DOTA_UNIT_CAP_MOVE_GROUND"
+		"MovementSpeed"				"3000"		// Speed.			
+
+		// Status
+		//----------------------------------------------------------------
+		"StatusHealth"				"10000"		// Base health.
+		
+		// Vision
+		//----------------------------------------------------------------
+		"VisionDaytimeRange"		"0"		// Range of vision during day light.
+		"VisionNighttimeRange"		"0"		// Range of vision at night time.
+
+		// Team
+		//----------------------------------------------------------------
+		"TeamName"					"DOTA_UNIT_TARGET_TEAM_FRIENDLY"	// Team name.
+	}
 	"npc_dota_bridge_point" 
 	{
 		"BaseClass"					"npc_dota_building"

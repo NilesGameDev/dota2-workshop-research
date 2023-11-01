@@ -19,6 +19,12 @@ function GameEventManager:OnPanoramaClickEvent(eventSrcIndex, args)
     local z = targetPointRaw["2"];
     local targetPoint = Vector(x, y, z)
 
+    local cursorFX = ParticleManager:CreateParticleForPlayer("particles/ui_mouseactions/clicked_occlusion_rings.vpcf",
+        PATTACH_CUSTOMORIGIN, nil,
+        hero:GetPlayerOwner())
+    ParticleManager:SetParticleControl(cursorFX, 0, targetPoint)
+    ParticleManager:ReleaseParticleIndex(cursorFX)
+
     AdvancedNavSystem:IssueMoveToTargetPoint(hero, targetPoint)
 end
 
@@ -33,6 +39,11 @@ end
 function GameEventManager:OnNpcSpawned(event)
     print("OnNpcSpawned")
     DeepPrintTable(event)
+    local unit = EntIndexToHScript(event.entindex)
+    if unit:GetUnitName() == "npc_dota_nav_agent" then
+        print(unit:GetUnitName())
+        return
+    end
 
     local hero = EntIndexToHScript(event.entindex)
     print(hero:GetSequence())
