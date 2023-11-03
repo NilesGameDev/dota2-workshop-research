@@ -2,19 +2,21 @@ if (AdvancedNavSystem == nil) then
     AdvancedNavSystem = class({})
 end
 
+require("nav_agent")
+
 function AdvancedNavSystem:IssueMoveToTargetPoint(player, targetPoint)
     if (player == nil or targetPoint == nil) then
         return
     end
     
-    targetPoint = SnapPosition(targetPoint)
-    local playerPos = SnapPosition(player:GetAbsOrigin())
+    local playerPos = player:GetAbsOrigin()
     local distanceToTarget = GridNav:FindPathLength(playerPos, targetPoint)
     print("GridNav distance: ", distanceToTarget)
     print("GridNav traversible: ", GridNav:IsTraversable(targetPoint))
     print("GridNav can find path: ", GridNav:CanFindPath(playerPos, targetPoint))
     print("GridNav remaining path: ", player:GetRemainingPathLength())
-    
+    local pathWayPoints = NavAgent:MoveToTargetPoint(targetPoint, playerPos)
+    DeepPrintTable(pathWayPoints)
 
     -- TODO: We should improve this below code to find nearest travel distance, not nearest point
     -- local nearestPathCorner = Entities:FindByClassnameNearest("path_corner", playerPos, distanceToTarget)
