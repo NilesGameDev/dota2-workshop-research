@@ -3,6 +3,8 @@ if (GameSetup == nil) then
 end
 
 require("game_event")
+require("navmesh_debug")
+require("game.entities.entclass_example")
 
 --nil will not force a hero selection
 local forceHero = "antimage"
@@ -40,7 +42,7 @@ function GameSetup:init()
             GameMode:SetCustomGameForceHero(forceHero)
         end
 
-        GameMode:SetExecuteOrderFilter(Dynamic_Wrap(GameEventManager, "OrderFilter"), GameEventManager)
+        -- GameMode:SetExecuteOrderFilter(Dynamic_Wrap(GameEventManager, "OrderFilter"), GameEventManager)
         self:LinkModifiers()
         self:RegisterCustomEvents()
     else --release build

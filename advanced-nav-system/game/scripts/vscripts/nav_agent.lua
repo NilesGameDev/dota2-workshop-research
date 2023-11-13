@@ -6,6 +6,9 @@ local nextGoalIndex = -1
 local isGoalFinished = false
 local goalPaths = {}
 
+local _currentTargetPoint
+local _nextTargetPoint
+
 function NavAgent:Init()
     self:CreateAgentUnit()
     ListenToGameEvent("dota_npc_goal_reached", Dynamic_Wrap(self, "OnNavAgentGoalReached"), self)
@@ -37,9 +40,15 @@ end
 
 function NavAgent:ThinkUpdate()
     self:NavAgentJumpToNextGoal()
-    self:CalculateNewPathLength()
 
-    return 0.03
+    if self:NeedBuildNewPath() then
+        if self:CalculateNewPathLength() then
+            -- _currentTargetPoint = _nextTargetPoint
+            print("Agent current path length:", self.currentPathLength)
+        end
+    end
+
+    return 0.03 -- per frame call
 end
 
 function NavAgent:SumPathLength()
@@ -55,11 +64,11 @@ end
 function NavAgent:CalculateNewPathLength()
     local agentPathLength = self.agentEnt:GetRemainingPathLength()
     if self.currentPathLength == agentPathLength then
-        return
+        return false
     end
 
     self.currentPathLength = agentPathLength
-    print("Agent current path length:", self.currentPathLength)
+    return true
 end
 
 function NavAgent:NavAgentJumpToNextGoal()
@@ -87,17 +96,15 @@ function NavAgent:CancelCurrentGoalCalc()
     end
 end
 
-function NavAgent:MoveToTargetPoint(targetPoint, heroPos)
+function NavAgent:MoveToTargetPoint(targetPoint)
     local gridnavPathWaypointsArr = {}
     local normalGridNavLength
     local pathCornerWayPointsArr = {}
     local pathCornersLength
     local navAgent = self.agentEnt
-    self:CancelCurrentGoalCalc()
+    _nextTargetPoint = targetPoint
+    navAgent:OnCommandMoveToDirection(targetPoint)
 
-    navAgent:MoveToPosition(targetPoint)
-    navAgent:MoveToPosition(targetPoint)
-    print(navAgent:GetRemainingPathLength())
     -- while navAgent:GetRemainingPathLength() == 0 do
     --     if navAgent:GetRemainingPathLength() ~= 0 then
     --         break
@@ -144,6 +151,10 @@ function NavAgent:MoveToTargetPoint(targetPoint, heroPos)
     -- end
 
     -- return gridnavPathWaypointsArr
+end
+
+function NavAgent:NeedBuildNewPath()
+    return _nextTargetPoint ~= _currentTargetPoint
 end
 
 

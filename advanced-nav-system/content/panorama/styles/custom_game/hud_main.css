@@ -1,0 +1,13 @@
+.gridnav-debug {
+    background-color: aqua;
+    width: 350px;
+    height: 120px;
+}
+
+.debug-label {
+    font-weight: bold;
+    margin-top: 25px;
+    padding: 25px;
+    background-color: lightcoral;
+    color: black;
+}

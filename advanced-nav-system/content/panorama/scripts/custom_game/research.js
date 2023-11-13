@@ -1,3 +1,4 @@
+"use strict";
 const CONSUME_EVENT = true;
 const CONTINUE_PROCESSING_EVENT = false;
 
@@ -66,12 +67,24 @@ function OnLeftButtonPressed() {
         
         GameEvents.SendCustomGameEventToServer("PanoramaClickEvent", sendData);
     } else {
+        var cursorPos = GameUI.GetCursorPosition()
+        var worldPos = GameUI.GetScreenWorldPosition(cursorPos);
+        $.Msg(worldPos)
+        $.Msg(Game.ScreenXYToWorld(cursorPos[0], cursorPos[1]))
         var sendData = { 
             "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
-            "BridgeIndex": targetIndex
+            "TargetPoint": worldPos,
+            "CursorOrigin": GameUI.GetCursorPosition(),
+            "ScreenCursorOrigin": Game.ScreenXYToWorld(cursorPos[0], cursorPos[1])
         };
+        
+        GameEvents.SendCustomGameEventToServer("PanoramaClickEvent", sendData);
+        // var sendData = { 
+        //     "HeroId": Players.GetPlayerHeroEntityIndex(Players.GetLocalPlayer()),
+        //     "BridgeIndex": targetIndex
+        // };
 
-        GameEvents.SendCustomGameEventToServer("PanoramaClickPlatformEvent", sendData);
+        // GameEvents.SendCustomGameEventToServer("PanoramaClickPlatformEvent", sendData);
     }
 }
 

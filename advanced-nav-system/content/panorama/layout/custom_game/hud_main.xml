@@ -4,9 +4,10 @@
     </styles>
     <scripts>
         <include src="file://{resources}/scripts/custom_game/research.js" />
+        <include src="file://{resources}/scripts/custom_game/navmesh-debug.js" />
     </scripts>
     
-    <Panel>
-        
+    <Panel class="gridnav-debug">
+        <Label id="gridnavCoord" class="debug-label" text="${Hello world!}" />
     </Panel>
 </root>

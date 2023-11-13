@@ -41,6 +41,7 @@ function GameEventManager:OnNpcSpawned(event)
     local pathCorner = Entities:FindByName(nil, "test_path_1")
     PlayerResource.hero_index = event.entindex
     PlayerResource.goal_index = pathCorner:entindex()
+    PlayerResource.player_id = hero:GetPlayerID()
     hero:SetThink("Init", NavAgent, 0.03)
 
     DebugDrawCircle(pathCorner:GetAbsOrigin(), Vector(204, 27, 27), 0, 64, true, 99999)
