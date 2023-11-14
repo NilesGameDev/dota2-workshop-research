@@ -77,27 +77,23 @@ function GridNavData:LinkGridBetweenLayers()
 
             local baseLayerNodePos = ent:GetAbsOrigin()
             local overhangLayerNodePos = linkEnt:GetAbsOrigin()
-            local baseLayerGridPos = Vector(
-                GridNav:WorldToGridPosX(baseLayerNodePos.x) + self.nodeSize,
-                GridNav:WorldToGridPosY(baseLayerNodePos.y) + self.nodeSize,
-                0
-            )
-            local overhangLayerGridPos = Vector(
-                GridNav:WorldToGridPosX(overhangLayerNodePos.x) + self.nodeSize,
-                GridNav:WorldToGridPosY(overhangLayerNodePos.y) + self.nodeSize,
-                0
-            )
-
-            local baseNode = self.gridArr[baseLayerGridPos.x][baseLayerGridPos.y]
-            local overhangNode = self.layer1GridArr[overhangLayerGridPos.x][overhangLayerGridPos.y]
-            baseNode.linkedNodes[#baseNode.linkedLayerNode + 1] = overhangNode
+            local baseNode = self:GetNodeFromWorldPos(baseLayerNodePos)
+            local overhangNode = self:GetNodeFromWorldPos(overhangLayerNodePos, overhangNode.navmeshLayer)
+            
+            baseNode.linkedNodes[#baseNode.linkedNodes + 1] = overhangNode
             baseNode.isPortalNode = true
+            overhangNode.linkedNodes[#overhangNode.linkedNodes + 1] = baseNode
+            overhangNode.isPortalNode = true
         end
     end
 end
 
-function GridNavData:GetNodeFromWorldPos(worldPos)
+function GridNavData:GetNodeFromWorldPos(worldPos, layer)
     local gridPos = self:WorldPositionToGrid(worldPos)
+
+    if layer == 1 then
+        return self.layer1GridArr[gridPos.x][gridPos.y]
+    end
     return self.gridArr[gridPos.x][gridPos.y]
 end
 

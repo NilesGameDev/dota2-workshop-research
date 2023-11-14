@@ -1,7 +1,7 @@
 -- Generated from template
 
-if CAddonTemplateGameMode == nil then
-    CAddonTemplateGameMode = class({})
+if CCustomNavSystem == nil then
+    CCustomNavSystem = class({})
 end
 
 function Precache(context)
@@ -18,18 +18,20 @@ require("game_setup")
 
 -- Create the game mode when we activate
 function Activate()
-    GameRules.AddonTemplate = CAddonTemplateGameMode()
+    GameRules.AddonTemplate = CCustomNavSystem()
     GameRules.AddonTemplate:InitGameMode()
 end
 
-function CAddonTemplateGameMode:InitGameMode()
+function CCustomNavSystem:InitGameMode()
     print("Template addon is loaded.")
     GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 2)
-    GameSetup:init()
+    GameRules.AdvancedNavSystem = CAdvancedNavSystem()
+    GameRules.AdvancedNavSystem:Activate()
+    GameSetup:Init()
 end
 
 -- Evaluate the state of the game
-function CAddonTemplateGameMode:OnThink()
+function CCustomNavSystem:OnThink()
     if GameRules:State_Get() == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
         --print( "Template addon script is running." )
     elseif GameRules:State_Get() >= DOTA_GAMERULES_STATE_POST_GAME then

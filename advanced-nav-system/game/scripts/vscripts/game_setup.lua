@@ -3,8 +3,7 @@ if (GameSetup == nil) then
 end
 
 require("game_event")
-require("navmesh_debug")
-require("game.entities.entclass_example")
+require("apputils.navmesh_debug")
 
 --nil will not force a hero selection
 local forceHero = "antimage"
@@ -42,23 +41,21 @@ function GameSetup:init()
             GameMode:SetCustomGameForceHero(forceHero)
         end
 
-        -- GameMode:SetExecuteOrderFilter(Dynamic_Wrap(GameEventManager, "OrderFilter"), GameEventManager)
         self:LinkModifiers()
         self:RegisterCustomEvents()
     else --release build
         --put your rules here
     end
-
-    ListenToGameEvent("npc_spawned", Dynamic_Wrap(GameEventManager, "OnNpcSpawned"), GameEventManager)
 end
 
 function GameSetup:LinkModifiers()
     LinkLuaModifier("modifier_bridge_crossing", LUA_MODIFIER_MOTION_NONE)
     LinkLuaModifier("modifier_static_object", LUA_MODIFIER_MOTION_NONE)
-    LinkLuaModifier("modifier_nav_agent_speed", LUA_MODIFIER_MOTION_NONE)
 end
 
 function GameSetup:RegisterCustomEvents()
+    ListenToGameEvent("npc_spawned", Dynamic_Wrap(GameEventManager, "OnNpcSpawned"), GameEventManager)
+
     CustomGameEventManager:RegisterListener("PanoramaClickPlatformEvent", function(...)
         return GameEventManager:OnPanoramaClickPlatformEvent(...)
     end)

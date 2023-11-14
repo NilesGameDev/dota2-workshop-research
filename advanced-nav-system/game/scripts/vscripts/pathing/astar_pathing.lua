@@ -37,7 +37,7 @@ function AStarPathing:FindPath(startPos, targetPos)
         table.insert(closedList, currentNode)
 
         if currentNode == targetNode then
-            return self:_RetracePath(startNode, targetNode)
+            return self:_RetraceWorldPath(startNode, targetNode)
         end
 
         local nodeNeighbors = self.grid:GetNeighbors(currentNode)
@@ -86,6 +86,28 @@ function AStarPathing:_RetracePath(startNode, endNode)
 
     while currentNode.nodeId ~= startNode.nodeId do
         table.insert(path, currentNode)
+        currentNode = currentNode.parentNode
+    end
+
+    return vlua.reverse(path)
+end
+
+function AStarPathing:_RetraceWorldPath(startNode, endNode)
+    local path = {}
+    local currentNode = endNode
+
+    while currentNode.nodeId ~= startNode.nodeId do
+        local subTargetPos = Vector(
+            GridNav:GridPosToWorldCenterX(currentNode.gridPosX),
+            GridNav:GridPosToWorldCenterY(currentNode.gridPosY),
+            0
+        )
+        if currentNode.navmeshLayer == 0 then
+            subTargetPos = GetGroundPosition(subTargetPos, nil)
+        elseif currentNode.navmeshLayer == 1 then
+            subTargetPos.z = 200
+        end
+        table.insert(path, subTargetPos)
         currentNode = currentNode.parentNode
     end
 
