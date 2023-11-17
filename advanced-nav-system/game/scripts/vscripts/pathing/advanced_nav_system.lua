@@ -1,7 +1,9 @@
 if (CAdvancedNavSystem == nil) then
     CAdvancedNavSystem = class({
+        _targetPos = nil;
         _path = nil;
-        _pathNodeIndex = 1;
+        _pathLength = 0;
+        _pathPosition = 0;
     })
 end
 
@@ -25,33 +27,48 @@ function CAdvancedNavSystem:BindUnit(targetUnit)
     self.navUnit:SetThink("OnThinkNavigating", self, "OnThinkNavigating", 0)
 end
 
-function CAdvancedNavSystem:OnThinkNavigating()
-    if self._path == nil or next(self._path) == nil then
-        self._pathNodeIndex = 1;
+function CAdvancedNavSystem:OnThinkNavigating() -- return 0.03 to mimic perframe
+    local currentPos = self.navUnit:GetAbsOrigin()
+    local targetPos = self._targetPos
+
+    if targetPos == nil then
         return 0.03
     end
 
-    local currentWaypoint = self._path[self._pathNodeIndex]
-    if currentWaypoint == nil then
+    if VectorDistance(currentPos, targetPos) < 0.4 then
         return 0.03
     end
-    if self.navUnit:GetAbsOrigin() == currentWaypoint then
-        self._pathNodeIndex = self._pathNodeIndex + 1
-        currentWaypoint = self._path[self._pathNodeIndex]
-    end
-    
-    if self.navUnit:GetAbsOrigin() == self._path[#self._path] then
-        self._path = nil
-    else
-        self.navUnit:OnCommandMoveToDirection(currentWaypoint)
+
+    local pathProgress = math.min(self._pathLength * self._pathPosition + 400 * GameRules:GetGameFrameTime(), self._pathLength)
+    self._pathPosition = pathProgress / self._pathLength
+
+    local segmentsSum = 0
+    for i = 1, #self._path, 1 do
+        local segmentLength = VectorDistance(self._path[i], self._path[i + 1])
+        
+        if segmentsSum <= pathProgress and segmentsSum + segmentLength >= pathProgress then
+            local rate = (pathProgress - segmentsSum) / segmentLength
+            targetPos = LerpVectors(self._path[i], self._path[i + 1], rate)
+            self.navUnit:SetAbsOrigin(GetGroundPosition(targetPos, nil))
+            break
+        end
+
+        segmentsSum = segmentsSum + segmentLength
     end
     
     return 0.03
 end
 
 function CAdvancedNavSystem:SetTargetPoint(targetPosition)
+    if targetPosition == self._targetPos then
+        return
+    end
+
     local startPosition = self.navUnit:GetAbsOrigin()
+    self._pathPosition = 0
+    self._pathLength = 0
     self._path = self.aStar:FindPath(startPosition, targetPosition) -- add coroutine with callback? for better perf
+    self._targetPos = targetPosition
 
     if self._path ~= nil then
         local pathColor = Vector(158, 54, 255)
@@ -60,6 +77,7 @@ function CAdvancedNavSystem:SetTargetPoint(targetPosition)
             if i == 1 then
                 DebugDrawLine_vCol(GetGroundPosition(startPosition, nil), GetGroundPosition(self._path[i], nil), pathColor, false, 3)
             else
+                self._pathLength = self._pathLength + VectorDistance(self._path[i - 1], self._path[i])
                 DebugDrawLine_vCol(GetGroundPosition(self._path[i - 1], nil), GetGroundPosition(self._path[i], nil), pathColor, false, 3)
             end
         end
