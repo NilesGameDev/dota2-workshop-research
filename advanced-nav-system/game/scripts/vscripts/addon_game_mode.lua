@@ -14,6 +14,7 @@ function Precache(context)
 	]]
 end
 
+require("pathing.advanced_nav_system")
 require("game_setup")
 
 -- Create the game mode when we activate
@@ -27,7 +28,7 @@ function CCustomNavSystem:InitGameMode()
     GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 2)
     GameRules.AdvancedNavSystem = CAdvancedNavSystem()
     GameRules.AdvancedNavSystem:Activate()
-    GameSetup:Init()
+    GameSetup:init()
 end
 
 -- Evaluate the state of the game

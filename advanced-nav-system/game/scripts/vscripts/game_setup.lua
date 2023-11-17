@@ -49,8 +49,8 @@ function GameSetup:init()
 end
 
 function GameSetup:LinkModifiers()
-    LinkLuaModifier("modifier_bridge_crossing", LUA_MODIFIER_MOTION_NONE)
-    LinkLuaModifier("modifier_static_object", LUA_MODIFIER_MOTION_NONE)
+    LinkLuaModifier("modifier_bridge_crossing", "modifiers/modifier_bridge_crossing.lua", LUA_MODIFIER_MOTION_NONE)
+    LinkLuaModifier("modifier_static_object", "modifiers/modifier_static_object.lua", LUA_MODIFIER_MOTION_NONE)
 end
 
 function GameSetup:RegisterCustomEvents()

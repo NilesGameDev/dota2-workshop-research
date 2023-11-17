@@ -1,3 +1,6 @@
+require("apputils.mathutils")
+require("maprepresentationdata.generic_node")
+
 if GridNavData == nil then
     GridNavData = class({
         worldSize = Vector(2048, 2048, 0), -- we only care about x,y as it representing width, height
@@ -8,13 +11,11 @@ if GridNavData == nil then
             self.worldSize = worldSize or self.worldSize
             self.nodeSize = nodeSize or self.nodeSize
             self.halfNodeSize = self.nodeSize / 2
-            self.gridSizeX = math.floor(self.worldSize.x / self.nodeSize)
-            self.gridSizeY = math.floor(self.worldSize.y / self.nodeSize)
+            self.gridSizeX = mathUtils.roundToInt(self.worldSize.x / self.nodeSize)
+            self.gridSizeY = mathUtils.roundToInt(self.worldSize.y / self.nodeSize)
         end
     })
 end
-
-require("maprepresentationdata.generic_node")
 
 function GridNavData:CreateGrid()
     local defaultWorldZ = 128
@@ -78,7 +79,7 @@ function GridNavData:LinkGridBetweenLayers()
             local baseLayerNodePos = ent:GetAbsOrigin()
             local overhangLayerNodePos = linkEnt:GetAbsOrigin()
             local baseNode = self:GetNodeFromWorldPos(baseLayerNodePos)
-            local overhangNode = self:GetNodeFromWorldPos(overhangLayerNodePos, overhangNode.navmeshLayer)
+            local overhangNode = self:GetNodeFromWorldPos(overhangLayerNodePos, 1)
             
             baseNode.linkedNodes[#baseNode.linkedNodes + 1] = overhangNode
             baseNode.isPortalNode = true
@@ -98,32 +99,40 @@ function GridNavData:GetNodeFromWorldPos(worldPos, layer)
 end
 
 function GridNavData:WorldPositionToGrid(worldPos)
+    local ratioX = (worldPos.x + self.worldSize.x / 2) / self.worldSize.x
+    local ratioY = (worldPos.y + self.worldSize.y / 2) / self.worldSize.y
+    ratioX = mathUtils.clamp01(ratioX)
+    ratioY = mathUtils.clamp01(ratioY)
+    
     return Vector(
-        GridNav:WorldToGridPosX(worldPos.x) + self.nodeSize, -- We have to convert grid coord from builtin
-        GridNav:WorldToGridPosY(worldPos.y) + self.nodeSize, -- position (has negative value) to our grid data
+        mathUtils.roundToInt((self.gridSizeX - 1) * ratioX),
+        mathUtils.roundToInt((self.gridSizeY - 1) * ratioY),
         0
     )
 end
 
-function GenericNode:GetNeighbors(node)
+function GridNavData:GetNeighbors(node)
     local neighbors = {}
     for x = -1, 1, 1 do
         for y = -1, 1, 1 do
-            if x ~= 0 and y ~= 0 then
-                local scanX = node.gridPosX + x
-                local scanY = node.gridPosY + y
-
-                -- Neighbor in base navmesh
-                if scanX >= 0 and scanX < self.gridSizeX and
-                    scanY >= 0 and scanY < self.gridSizeY then
-                    table.insert(neighbors, self.gridArr[scanX][scanY])
-                end
-
-                -- Additional neighbors in overhang layer, if exists
-                if node.isPortalNode and #node.linkedNodes > 0 then
-                    vlua.extend(neighbors, node.linkedNodes)
-                end
+            if x == 0 and y == 0 then
+                goto continue
             end
+            
+            local scanX = node.gridPosX + x
+            local scanY = node.gridPosY + y
+
+            -- Neighbor in base navmesh
+            if scanX >= 0 and scanX < self.gridSizeX and
+                scanY >= 0 and scanY < self.gridSizeY then
+                table.insert(neighbors, self.gridArr[scanX][scanY])
+            end
+
+            -- Additional neighbors in overhang layer, if exists
+            if node.isPortalNode and #node.linkedNodes > 0 then
+                vlua.extend(neighbors, node.linkedNodes)
+            end
+            ::continue::
         end
     end
 

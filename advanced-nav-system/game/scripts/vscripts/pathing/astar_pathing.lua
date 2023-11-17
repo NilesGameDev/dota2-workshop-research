@@ -1,67 +1,67 @@
 if AStarPathing == nil then
     AStarPathing = class({
-        grid = GridNavData(),
-        constructor = function(grid)
+        constructor = function(self, grid)
             self.grid = grid or self.grid
         end
     })
 end
 
+require("apputils.heap")
 require("maprepresentationdata.grid_nav_data")
+
+local nodeCostComparer = function (nodeA, nodeB)
+    local costCompare = nodeA:GetFCost() - nodeB:GetFCost()
+    if costCompare == 0 then
+        costCompare = nodeA.hCost - nodeB.hCost
+    end
+
+    return -costCompare -- the lower cost the better
+end
+local equalNodeFunc = function (nodeA, nodeB)
+    if nodeA == nil or nodeB == nil then
+        return false
+    end
+    return nodeA.nodeId == nodeB.nodeId
+end
 
 local CONST_DIAGONAL_WEIGHT = 14
 local CONST_STRAIGHT_WEIGHT = 10
 
--- MORE OPTIMIZATIONS COME LATER
 function AStarPathing:FindPath(startPos, targetPos)
     -- First, convert the world position to grid position, navmesh layer is not matter now
     local startNode = self.grid:GetNodeFromWorldPos(startPos)
     local targetNode = self.grid:GetNodeFromWorldPos(targetPos)
 
-    local openList = {}
+    if not startNode.gridTraversable or not targetNode.gridTraversable then
+        return nil
+    end
+
+    local openList = StandardHeap(nodeCostComparer)
     local closedList = {}
-    table.insert(openList, startNode)
+    openList:Add(startNode)
 
-    while #openList > 0 do
-        local currentNode = openList[1] -- lua table is one-indexed if using table.insert
+    while openList.itemCount > 0 do
+        local currentNode = openList:RemoveFirst()
+        closedList[currentNode.nodeId] = currentNode
 
-        -- TODO: optimize this!
-        for i = 2, #openList, 1 do
-            if openList[i]:GetFCost() < currentNode:GetFCost() or
-                openList[i]:GetFCost() == currentNode:GetFCost() and openList[i].hCost < currentNode.hCost then
-                currentNode = openList[i]
-            end
-        end
-
-        listUtils.remove(currentNode)
-        table.insert(closedList, currentNode)
-
-        if currentNode == targetNode then
-            return self:_RetraceWorldPath(startNode, targetNode)
+        if currentNode.nodeId == targetNode.nodeId then
+            return self:_RetracePath(startNode, targetNode)
         end
 
         local nodeNeighbors = self.grid:GetNeighbors(currentNode)
         for _, neighbor in ipairs(nodeNeighbors) do
-            -- TODO: also optimize this!!
             -- If the neighbor is traversable and not in the closed list
-            if neighbor.gridTraversable and not listUtils.contains(closedList, function(otherNode)
-                    return neighbor.nodeId == otherNode.nodeId
-                end)
-            then
+            if neighbor.gridTraversable and not vlua.contains(closedList, neighbor.nodeId) then
                 local movementCostToNeighbor = currentNode.gCost + self:GetGridDistance(currentNode, neighbor)
-                if movementCostToNeighbor < neighbor.gCost or not listUtils.contains(openList, function(otherNode)
-                        return neighbor.nodeId == otherNode.nodeId
-                    end)
-                then
+                if movementCostToNeighbor < neighbor.gCost or not openList:Contains(neighbor, equalNodeFunc) then
                     neighbor.gCost = movementCostToNeighbor -- update to new gCost
                     neighbor.hCost = self:GetGridDistance(neighbor, targetNode)
                     neighbor.parentNode = currentNode
 
-                    if not listUtils.contains(openList, function(otherNode)
-                            return neighbor.nodeId == otherNode.nodeId
-                        end)
-                    then
-                        table.insert(openList, neighbor)
+                    if not openList:Contains(neighbor, equalNodeFunc) then
+                        openList:Add(neighbor)
+                    else
+                        -- openList:UpdateItem(neighbor)
                     end
                 end
             end
@@ -70,8 +70,8 @@ function AStarPathing:FindPath(startPos, targetPos)
 end
 
 function AStarPathing:GetGridDistance(fromNode, toNode)
-    local distanceX = fromNode.gridPosX - toNode.gridPosX
-    local distanceY = fromNode.gridPosY - toNode.gridPosY
+    local distanceX = math.abs(fromNode.gridPosX - toNode.gridPosX)
+    local distanceY = math.abs(fromNode.gridPosY - toNode.gridPosY)
 
     if distanceX > distanceY then
         return CONST_DIAGONAL_WEIGHT * distanceY + CONST_STRAIGHT_WEIGHT * (distanceX - distanceY)
@@ -85,29 +85,7 @@ function AStarPathing:_RetracePath(startNode, endNode)
     local currentNode = endNode
 
     while currentNode.nodeId ~= startNode.nodeId do
-        table.insert(path, currentNode)
-        currentNode = currentNode.parentNode
-    end
-
-    return vlua.reverse(path)
-end
-
-function AStarPathing:_RetraceWorldPath(startNode, endNode)
-    local path = {}
-    local currentNode = endNode
-
-    while currentNode.nodeId ~= startNode.nodeId do
-        local subTargetPos = Vector(
-            GridNav:GridPosToWorldCenterX(currentNode.gridPosX),
-            GridNav:GridPosToWorldCenterY(currentNode.gridPosY),
-            0
-        )
-        if currentNode.navmeshLayer == 0 then
-            subTargetPos = GetGroundPosition(subTargetPos, nil)
-        elseif currentNode.navmeshLayer == 1 then
-            subTargetPos.z = 200
-        end
-        table.insert(path, subTargetPos)
+        table.insert(path, currentNode.worldPosition)
         currentNode = currentNode.parentNode
     end
 

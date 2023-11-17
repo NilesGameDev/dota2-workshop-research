@@ -2,7 +2,7 @@ if (GameEventManager == nil) then
     GameEventManager = class({})
 end
 
-require("advanced_nav_system")
+require("pathing.advanced_nav_system")
 
 function GameEventManager:OnPanoramaClickPlatformEvent(eventSrcIndex, args)
     print("Event received! Event source index: " .. eventSrcIndex)
@@ -24,7 +24,7 @@ function GameEventManager:OnPanoramaClickEvent(eventSrcIndex, args)
     ParticleManager:SetParticleControl(cursorFX, 0, targetPoint)
     ParticleManager:ReleaseParticleIndex(cursorFX)
 
-    GameRules.AdvancedNavSystem:MoveToTargetPoint(targetPoint)
+    GameRules.AdvancedNavSystem:SetTargetPoint(targetPoint)
 end
 
 function GameEventManager:OnNpcSpawned(event)

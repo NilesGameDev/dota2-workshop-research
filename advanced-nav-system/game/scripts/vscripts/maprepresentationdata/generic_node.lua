@@ -28,5 +28,5 @@ if GenericNode == nil then
 end
 
 function GenericNode:GetFCost()
-    return gCost + hCost;
+    return self.gCost + self.hCost;
 end
