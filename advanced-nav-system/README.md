@@ -11,7 +11,7 @@ Thus, a simple solutions can be implemented to tackle this problem:
 Although there's more to come, like how can we update the navigation data acknowledging the above approach? Tune in as I may update the repositor with some gifs soon!
 
 ## WIP custom pathfinding using A-star algorithm
-![Dota 2 WIP Custom Pathfinding - Trim](https://github.com/NilesGameDev/dota2-workshop-research/assets/22948637/15722d8e-692f-4369-97d6-f003191c32f4)
+![Dota 2 WIP Custom Pathfinding](https://github.com/NilesGameDev/dota2-workshop-research/assets/22948637/b08cb004-18a3-4d11-abe6-48ebf5970711)
 
 More updates coming soon!
 
