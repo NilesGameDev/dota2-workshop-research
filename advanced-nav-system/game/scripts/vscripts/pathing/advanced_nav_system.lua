@@ -1,9 +1,9 @@
 if (CAdvancedNavSystem == nil) then
     CAdvancedNavSystem = class({
-        _targetPos = nil;
-        _path = nil;
-        _pathLength = 0;
-        _pathPosition = 0;
+        _targetPos = nil,
+        _path = nil,
+        _pathLength = 0,
+        _pathPosition = 0,
     })
 end
 
@@ -23,7 +23,7 @@ function CAdvancedNavSystem:BindUnit(targetUnit)
         return
     end
     self.navUnit = targetUnit
-    self.navUnit:AddNewModifier(nil, nil, "modifier_bridge_crossing", nil)
+    self.navUnit.moveSpeed = 400 -- Find a better way to assign speed to unit
     self.navUnit:SetThink("OnThinkNavigating", self, "OnThinkNavigating", 0)
 end
 
@@ -36,26 +36,35 @@ function CAdvancedNavSystem:OnThinkNavigating() -- return 0.03 to mimic perframe
     end
 
     if VectorDistance(currentPos, targetPos) < 0.4 then
+        self.navUnit:StartGesture(ACT_DOTA_IDLE)
         return 0.03
     end
 
-    local pathProgress = math.min(self._pathLength * self._pathPosition + 400 * GameRules:GetGameFrameTime(), self._pathLength)
+    if self._path == nil then
+        return 0.03
+    end
+
+    local pathProgress = math.min(
+        self._pathLength * self._pathPosition + self.navUnit.moveSpeed * GameRules:GetGameFrameTime(),
+        self._pathLength)
     self._pathPosition = pathProgress / self._pathLength
 
     local segmentsSum = 0
     for i = 1, #self._path, 1 do
-        local segmentLength = VectorDistance(self._path[i], self._path[i + 1])
-        
+        local segmentLength = VectorDistance(self._path[i], self._path[i + 1]) -- TODO: handle null here
+
         if segmentsSum <= pathProgress and segmentsSum + segmentLength >= pathProgress then
             local rate = (pathProgress - segmentsSum) / segmentLength
             targetPos = LerpVectors(self._path[i], self._path[i + 1], rate)
-            self.navUnit:SetAbsOrigin(GetGroundPosition(targetPos, nil))
+            targetPos = self:_GetCorrectGroundPosition(targetPos)
+            self.navUnit:SetAbsOrigin(targetPos)
             break
         end
 
         segmentsSum = segmentsSum + segmentLength
     end
-    
+
+    -- print(self.navUnit:GetAbsOrigin().z)
     return 0.03
 end
 
@@ -71,14 +80,16 @@ function CAdvancedNavSystem:SetTargetPoint(targetPosition)
     self._targetPos = targetPosition
 
     if self._path ~= nil then
+        self.navUnit:FadeGesture(ACT_DOTA_IDLE)
+        self.navUnit:StartGesture(ACT_DOTA_RUN)
         local pathColor = Vector(158, 54, 255)
         for i = 1, #self._path, 1 do
-            DebugDrawSphere(GetGroundPosition(self._path[i], nil), pathColor, 0, 8, false, 3)
+            DebugDrawSphere(self._path[i], pathColor, 0, 8, false, 3)
             if i == 1 then
-                DebugDrawLine_vCol(GetGroundPosition(startPosition, nil), GetGroundPosition(self._path[i], nil), pathColor, false, 3)
+                DebugDrawLine_vCol(GetGroundPosition(startPosition, nil), self._path[i], pathColor, false, 3)
             else
                 self._pathLength = self._pathLength + VectorDistance(self._path[i - 1], self._path[i])
-                DebugDrawLine_vCol(GetGroundPosition(self._path[i - 1], nil), GetGroundPosition(self._path[i], nil), pathColor, false, 3)
+                DebugDrawLine_vCol(self._path[i - 1], self._path[i], pathColor, false, 3)
             end
         end
     end
@@ -87,9 +98,9 @@ end
 function CAdvancedNavSystem:_BuildMultiGridMesh()
     DebugDrawClear()
     self.grid:CreateGrid()
-    -- self.grid:CreateOverhangGrid()
-    -- self.grid:LinkGridBetweenLayers()
-    
+    self.grid:CreateOverhangGrid()
+    self.grid:LinkGridBetweenLayers()
+
     -- For debugging
     self.grid:DebugDrawWorldBound()
     self.grid:DebugDrawGrid()
@@ -112,4 +123,21 @@ function CAdvancedNavSystem:_OnUnitOrderFilter(args)
     end
 
     return true
+end
+
+function CAdvancedNavSystem:_GetCorrectGroundPosition(pos)
+    local traceTable =
+    {
+        startpos = pos,
+        endpos = pos + 100 * Vector(0, 0, -1),
+        ignore = self.navUnit
+    }
+
+    TraceLine(traceTable)
+
+    if traceTable.hit then
+        pos.z = math.max(traceTable.pos.z, pos.z)
+    end
+
+    return pos
 end

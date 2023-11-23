@@ -45,13 +45,26 @@ function AStarPathing:FindPath(startPos, targetPos)
         closedList[currentNode.nodeId] = currentNode
 
         if currentNode.nodeId == targetNode.nodeId then
-            return self:_RetracePath(startNode, targetNode)
+            local waypoints = self:_RetracePath(startNode, targetNode)
+            
+            -- Check if the startPos, targetPos should be included, as pathfinding has all positions snapped
+            if startPos ~= waypoints[1] then
+                local fullPath = {}
+                table.insert(fullPath, startPos)
+                vlua.extend(fullPath, waypoints)
+                if targetPos ~= waypoints[#waypoints] then
+                    table.insert(fullPath, targetPos)
+                end
+                return fullPath
+            end
+
+            return waypoints
         end
 
         local nodeNeighbors = self.grid:GetNeighbors(currentNode)
         for _, neighbor in ipairs(nodeNeighbors) do
-            -- If the neighbor is traversable and not in the closed list
-            if neighbor.gridTraversable and not vlua.contains(closedList, neighbor.nodeId) then
+            -- If the neighbor is traversable (or a portal node) and not in the closed list
+            if (neighbor.gridTraversable or neighbor.isPortalNode) and not vlua.contains(closedList, neighbor.nodeId) then
                 local movementCostToNeighbor = currentNode.gCost + self:GetGridDistance(currentNode, neighbor)
                 if movementCostToNeighbor < neighbor.gCost or not openList:Contains(neighbor, equalNodeFunc) then
                     neighbor.gCost = movementCostToNeighbor -- update to new gCost
@@ -61,7 +74,7 @@ function AStarPathing:FindPath(startPos, targetPos)
                     if not openList:Contains(neighbor, equalNodeFunc) then
                         openList:Add(neighbor)
                     else
-                        -- openList:UpdateItem(neighbor)
+                        openList:UpdateItem(neighbor)
                     end
                 end
             end
@@ -85,9 +98,31 @@ function AStarPathing:_RetracePath(startNode, endNode)
     local currentNode = endNode
 
     while currentNode.nodeId ~= startNode.nodeId do
-        table.insert(path, currentNode.worldPosition)
+        table.insert(path, currentNode)
         currentNode = currentNode.parentNode
     end
 
-    return vlua.reverse(path)
+    local waypoints = self:_SimplifyPath(path)
+    return vlua.reverse(waypoints)
+end
+
+function AStarPathing:_SimplifyPath(path)
+    local waypoints = {}
+    local prevDirection = Vector(0, 0, 0)
+
+    for i = 2, #path, 1 do
+        local newDirection = Vector(path[i - 1].gridPosX - path[i].gridPosX, path[i - 1].gridPosY - path[i].gridPosY, 0)
+        if newDirection ~= prevDirection then
+            local groundPos = path[i].worldPosition
+            if path[i].navmeshLayer == 0 then
+                groundPos = GetGroundPosition(groundPos, nil)
+            end
+
+            table.insert(waypoints, groundPos)
+        end
+
+        prevDirection = newDirection
+    end
+
+    return waypoints
 end

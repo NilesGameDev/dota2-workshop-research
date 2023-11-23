@@ -59,7 +59,7 @@ function GridNavData:CreateOverhangGrid()
                     self.layer1GridArr[baseLayerGridPosX] = {}
                 end
                 self.layer1GridArr[baseLayerGridPosX][baseLayerGridPosY] = GenericNode(nodePoint, traversable,
-                    baseLayerGridPosX, baseLayerGridPosY)
+                    baseLayerGridPosX, baseLayerGridPosY, 1)
             end
         end
     end
@@ -125,7 +125,12 @@ function GridNavData:GetNeighbors(node)
             -- Neighbor in base navmesh
             if scanX >= 0 and scanX < self.gridSizeX and
                 scanY >= 0 and scanY < self.gridSizeY then
-                table.insert(neighbors, self.gridArr[scanX][scanY])
+                if node.navmeshLayer == 0 then
+                    table.insert(neighbors, self.gridArr[scanX][scanY])
+                elseif node.navmeshLayer == 1 and
+                    self.layer1GridArr[scanX] ~= nil and self.layer1GridArr[scanX][scanY] ~= nil then
+                    table.insert(neighbors, self.layer1GridArr[scanX][scanY])
+                end
             end
 
             -- Additional neighbors in overhang layer, if exists
