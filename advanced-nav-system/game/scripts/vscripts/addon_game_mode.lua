@@ -14,6 +14,7 @@ function Precache(context)
 	]]
 end
 
+require("ECS")
 require("pathing.advanced_nav_system")
 require("game_setup")
 
