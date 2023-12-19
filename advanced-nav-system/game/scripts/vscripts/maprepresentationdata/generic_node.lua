@@ -25,6 +25,7 @@ if GenericNode == nil then
             incrNodeId = incrNodeId + 1
         end
     })
+
 end
 
 function GenericNode:GetFCost()

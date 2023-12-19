@@ -1,0 +1,50 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true,
+            "**/*.*_c": true
+        }
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "buildhammermap",
+                "command": "resourcecompiler.exe",
+                "type": "shell",
+                "args": [
+                    "-threads",
+                    "5",
+                    "-fshallow",
+                    "-maxtextureres",
+                    "256",
+                    "-dxlevel",
+                    "110",
+                    "-quiet",
+                    "-unbufferedio",
+                    "-noassert",
+                    "-world",
+                    "-phys",
+                    "-vis",
+                    "-gridnav",
+                    "-breakpad",
+                    "-nop4",
+                    "-outroot",
+                    "'${env:DOTA_ROOT}\\game'",
+                    "'${env:DOTA_ROOT}\\content\\dota_addons\\research\\maps\\test_map.vmap'"
+                ],
+                "problemMatcher": []
+            }
+        ]
+    }
+}
