@@ -856,6 +856,7 @@ __F__["ECS"] = function()
    local System = __REQUIRE__("System")
    local Archetype = __REQUIRE__("Archetype")
    local Component = __REQUIRE__("Component")
+   local Resource = __REQUIRE__("Resource")
    
    local function setLoopManager(manager)
       World.LoopManager = manager
@@ -890,6 +891,7 @@ __F__["ECS"] = function()
       System = System.Create,
       Archetype = Archetype,
       Component = Component.Create,
+      Resource = Resource.Create,
       SetLoopManager = setLoopManager
    }
    
@@ -2101,6 +2103,102 @@ __F__["RobloxLoopManager"] = function()
    
 end
 
+__F__["Resource"] = function ()
+   local Utility = __REQUIRE__("Utility")
+   
+   local copyDeep = Utility.copyDeep
+   local mergeDeep = Utility.mergeDeep
+   
+   local CLASS_SEQ = 0
+
+   --[[:
+      @param initializer {function(table) => table}
+      @return ResourceClass
+   ]]
+   local function createResourceClass(initializer)
+      CLASS_SEQ = CLASS_SEQ + 1
+   
+      local ResourceClass = {
+         Id = CLASS_SEQ
+      }
+      ResourceClass.__index = ResourceClass
+
+      setmetatable(ResourceClass, {
+         __call = function(t, value)
+            return ResourceClass.New(value)
+         end,
+         __newindex = function(t, key, value)
+            rawset(t, key, value)
+         end
+      })
+
+      --[[
+         Constructor
+   
+         @param value {any} If the value is not a table, it will be converted to the format "{ value = value }"
+         @return Resource
+      ]]
+      function ResourceClass.New(value)
+         if (value ~= nil and type(value) ~= "table") then
+            value = { value = value }
+         end
+         local resource = setmetatable(initializer(value) or {}, ResourceClass)
+         resource.isResource = true
+         resource.resClass = ResourceClass
+         return resource
+      end
+
+      return ResourceClass
+   end
+
+   local function defaultInitializer(value)
+      return value or {}
+   end
+   
+   --[[
+      A Resource is a singleton object that can be inserted into a World. 
+   ]]
+   local Resource = {}
+
+   --[[
+      Register a new ResourceClass
+   
+      @param template {table|function(table?) -> table} 
+         When `table`, this template will be used for creating resource instances
+         When it's a `function`, it will be invoked when a new resource is instantiated. The creation parameter of the 
+            resource is passed to template function
+         If the template type is different from `table` and `function`, **ECS Lua** will generate a template in the format 
+            `{ value = template }`.
+      @return ResourceClass  
+   ]]
+   function Resource.Create(template)
+      local initializer = defaultInitializer
+
+      if template ~= nil then
+         local ttype = type(template)
+         if (ttype == "function") then
+            initializer = template
+         else
+            if (ttype ~= "table") then
+               template = { value = template }
+            end
+
+            initializer = function(value)
+               local data = copyDeep(template)
+               if (value ~= nil) then
+                  mergeDeep(data, value)
+               end
+               return data
+            end
+         end
+      end
+
+      return createResourceClass(initializer)
+   end
+
+   return Resource
+end
+
 __F__["System"] = function()
    -- src/System.lua
    
@@ -2984,6 +3082,7 @@ __F__["World"] = function()
          _dirty = false, -- True when create/remove entity, add/remove entity component (change archetype)
          _timer = Timer.New(frequency),
          _systems = {}, -- systems in this world
+         _resources = {}, -- shared resourced in this world
          _repository = EntityRepository.New(),
          _entitiesCreated = {}, -- created during the execution of the Update
          _entitiesRemoved = {}, -- removed during execution (only removed after the last execution step)
@@ -3052,6 +3151,33 @@ __F__["World"] = function()
             self._executor:SetSystems(self._systems)
          end
       end
+   end
+
+   --[[
+      Insert a new resource to the world.
+   ]]
+   function World:InsertResource(resource)
+      if resource then
+         if self._resources[resource.resClass] == nil then
+            self._resources[resource.resClass] = resource
+         end
+      end
+   end
+
+   --[[
+      Remove existing resource from the world.
+   ]]
+   function World:RemoveResource(resource)
+      if resource and resource.resClass ~= nil then
+         self._resources[resource.resClass] = nil
+      end
+   end
+
+   --[[
+      Get resource in the world by resource class name
+   ]]
+   function World:GetResource(resourceClass)
+      return self._resources[resourceClass]
    end
    
    --[[
