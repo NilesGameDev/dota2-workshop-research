@@ -2,7 +2,7 @@ if (GameSetup == nil) then
     GameSetup = class({})
 end
 
-require("game_event")
+require("events.game_event")
 require("apputils.navmesh_debug")
 
 --nil will not force a hero selection
@@ -12,7 +12,7 @@ function GameSetup:init()
     if IsInToolsMode() then --debug build
         --skip all the starting game mode stages e.g picking screen, showcase, etc
         GameRules:EnableCustomGameSetupAutoLaunch(true)
-        GameRules:SetCustomGameSetupAutoLaunchDelay(0)
+        -- GameRules:SetCustomGameSetupAutoLaunchDelay(0)
         GameRules:SetHeroSelectionTime(0)
         GameRules:SetStrategyTime(0)
         GameRules:SetPreGameTime(0)
@@ -43,6 +43,7 @@ function GameSetup:init()
 
         self:LinkModifiers()
         self:RegisterCustomEvents()
+        self:RegisterListeners()
     else --release build
         --put your rules here
     end
@@ -54,8 +55,11 @@ function GameSetup:LinkModifiers()
 end
 
 function GameSetup:RegisterCustomEvents()
+    ListenToGameEvent("player_spawn", Dynamic_Wrap(GameEventManager, "OnPlayerSpawned"), GameEventManager)
     ListenToGameEvent("npc_spawned", Dynamic_Wrap(GameEventManager, "OnNpcSpawned"), GameEventManager)
+end
 
+function GameSetup:RegisterListeners()
     CustomGameEventManager:RegisterListener("PanoramaClickPlatformEvent", function(...)
         return GameEventManager:OnPanoramaClickPlatformEvent(...)
     end)

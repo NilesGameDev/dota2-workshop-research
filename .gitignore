@@ -1,4 +1,5 @@
 **/.vscode
+**/panorama_debugger.cfg
 
 **/game/tools_thumbnail_cache.bin
 **/game/maps

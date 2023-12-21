@@ -1,5 +1,3 @@
--- Generated from template
-
 if CCustomNavSystem == nil then
     CCustomNavSystem = class({})
 end
@@ -14,9 +12,7 @@ function Precache(context)
 	]]
 end
 
-require("ECS")
-require("pathing.advanced_nav_system")
-require("game_setup")
+require("main")
 
 -- Create the game mode when we activate
 function Activate()
@@ -27,9 +23,7 @@ end
 function CCustomNavSystem:InitGameMode()
     print("Template addon is loaded.")
     GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 2)
-    GameRules.AdvancedNavSystem = CAdvancedNavSystem()
-    GameRules.AdvancedNavSystem:Activate()
-    GameSetup:init()
+    Main:main()
 end
 
 -- Evaluate the state of the game

@@ -13,6 +13,11 @@ end
 
 function GameEventManager:OnPanoramaClickEvent(eventSrcIndex, args)
     local hero = EntIndexToHScript(args["HeroId"])
+
+    if hero == nil then
+        return
+    end
+
     local targetPointRaw = args["TargetPoint"]
     local x = targetPointRaw["0"];
     local y = targetPointRaw["1"];
@@ -27,10 +32,15 @@ function GameEventManager:OnPanoramaClickEvent(eventSrcIndex, args)
     GameRules.AdvancedNavSystem:SetTargetPoint(targetPoint)
 end
 
+function GameEventManager:OnPlayerSpawned(event)
+    PlayerResource.playerId = event.userid
+end
+
 function GameEventManager:OnNpcSpawned(event)
     local hero = EntIndexToHScript(event.entindex)
-    PlayerResource.playerId = hero:GetPlayerID()
-    GameRules.AdvancedNavSystem:BindUnit(hero)
+    if hero and hero:IsRealHero() then
+        GameRules.AdvancedNavSystem:BindUnit(hero)
+    end
 end
 
 function GameEventManager:OrderFilter(event)
