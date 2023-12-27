@@ -90,8 +90,13 @@ function OnLeftButtonPressed() {
 
 // Register game mouse event callback
 GameUI.SetMouseCallback(function (eventName, mouseButton) {
-    if (GameUI.GetClickBehaviors() !== CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_NONE)
+    if (GameUI.GetClickBehaviors() !== CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_NONE) {
         return CONTINUE_PROCESSING_EVENT;
+    }
+
+    if (eventName === "doublepressed") {
+        return CONTINUE_PROCESSING_EVENT;
+    }
 
     if (eventName === "pressed") {
 

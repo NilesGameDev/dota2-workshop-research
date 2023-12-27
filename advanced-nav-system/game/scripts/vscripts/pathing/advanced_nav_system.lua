@@ -8,7 +8,7 @@ if (CAdvancedNavSystem == nil) then
 end
 
 require("pathing.astar_pathing")
-require("maprepresentationdata.grid_nav_data")
+require("navmeshdata.grid_nav_data")
 
 function CAdvancedNavSystem:Activate()
     self.grid = GridNavData(Vector(8192, 8192, 0), 64)
@@ -32,16 +32,17 @@ function CAdvancedNavSystem:OnThinkNavigating() -- return 0.03 to mimic perframe
     local targetPos = self._targetPos
 
     if targetPos == nil then
-        return 0.03
+        return GameRules:GetGameFrameTime()
     end
 
-    if VectorDistance(currentPos, targetPos) < 0.4 then
+    if VectorDistance(currentPos, targetPos) < 0.1 then
+        self.navUnit:FadeGesture(ACT_DOTA_RUN)
         self.navUnit:StartGesture(ACT_DOTA_IDLE)
-        return 0.03
+        return GameRules:GetGameFrameTime()
     end
 
     if self._path == nil then
-        return 0.03
+        return GameRules:GetGameFrameTime()
     end
 
     local pathProgress = math.min(
@@ -64,8 +65,7 @@ function CAdvancedNavSystem:OnThinkNavigating() -- return 0.03 to mimic perframe
         segmentsSum = segmentsSum + segmentLength
     end
 
-    -- print(self.navUnit:GetAbsOrigin().z)
-    return 0.03
+    return GameRules:GetGameFrameTime()
 end
 
 function CAdvancedNavSystem:SetTargetPoint(targetPosition)
@@ -82,9 +82,10 @@ function CAdvancedNavSystem:SetTargetPoint(targetPosition)
     if self._path ~= nil then
         self.navUnit:FadeGesture(ACT_DOTA_IDLE)
         self.navUnit:StartGesture(ACT_DOTA_RUN)
-        local pathColor = Vector(158, 54, 255)
+        local pathColor = Vector(0, 0, 0)
         for i = 1, #self._path, 1 do
             DebugDrawSphere(self._path[i], pathColor, 0, 8, false, 3)
+            DebugDrawText(self._path[i], tostring(self._path[i].z), true, 5)
             if i == 1 then
                 DebugDrawLine_vCol(GetGroundPosition(startPosition, nil), self._path[i], pathColor, false, 3)
             else
@@ -97,7 +98,7 @@ end
 
 function CAdvancedNavSystem:_BuildMultiGridMesh()
     DebugDrawClear()
-    self.grid:CreateGrid()
+    self.grid:CreateBaseGrid()
     self.grid:CreateOverhangGrid()
     self.grid:LinkGridBetweenLayers()
 
@@ -120,7 +121,10 @@ function CAdvancedNavSystem:_OnUnitOrderFilter(args)
     local orderType = args["order_type"]
     if orderType == DOTA_UNIT_ORDER_STOP then
         self._path = nil
+        return false
     end
+
+    DeepPrintTable(args)
 
     return true
 end

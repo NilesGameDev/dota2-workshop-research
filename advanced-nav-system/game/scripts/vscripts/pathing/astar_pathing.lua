@@ -7,7 +7,7 @@ if AStarPathing == nil then
 end
 
 require("apputils.heap")
-require("maprepresentationdata.grid_nav_data")
+require("navmeshdata.grid_nav_data")
 
 local nodeCostComparer = function (nodeA, nodeB)
     local costCompare = nodeA:GetFCost() - nodeB:GetFCost()

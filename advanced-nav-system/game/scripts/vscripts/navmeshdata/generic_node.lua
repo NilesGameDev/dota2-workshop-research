@@ -21,6 +21,7 @@ if GenericNode == nil then
             self.gridPosX = gridPosX or self.gridPosX
             self.gridPosY = gridPosY or self.gridPosY
             self.navmeshLayer = navmeshLayer or self.navmeshLayer
+            self.linkedNodes = {}
             self.nodeId = incrNodeId
             incrNodeId = incrNodeId + 1
         end

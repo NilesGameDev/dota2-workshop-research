@@ -1,5 +1,5 @@
 require("apputils.mathutils")
-require("maprepresentationdata.generic_node")
+require("navmeshdata.generic_node")
 
 if GridNavData == nil then
     GridNavData = class({
@@ -17,7 +17,7 @@ if GridNavData == nil then
     })
 end
 
-function GridNavData:CreateGrid()
+function GridNavData:CreateBaseGrid()
     local defaultWorldZ = 128
     local worldBottomLeft = Vector(-self.worldSize.x / 2, -self.worldSize.y / 2, defaultWorldZ)
 
@@ -25,7 +25,7 @@ function GridNavData:CreateGrid()
         self.gridArr[x] = {}
         for y = 0, self.gridSizeY - 1, 1 do
             local nodePoint = worldBottomLeft +
-            Vector(x * self.nodeSize + self.halfNodeSize, y * self.nodeSize + self.halfNodeSize)
+                Vector(x * self.nodeSize + self.halfNodeSize, y * self.nodeSize + self.halfNodeSize)
             local traversable = GridNav:IsTraversable(nodePoint)
             self.gridArr[x][y] = GenericNode(nodePoint, traversable, x, y)
         end
@@ -37,6 +37,7 @@ function GridNavData:CreateOverhangGrid()
     -- In the future there will be many layers, each with different z-position
     -- With layer 0 is the base layer (Created using built-in GridNav)
     local overhangEnts = Entities:FindAllByName("navmesh_overhang_1")
+    local layerNum = 1
     for _, ent in pairs(overhangEnts) do
         local overhangPos = ent:GetAbsOrigin()
         local overhangBoundMins = ent:GetBoundingMins()
@@ -51,15 +52,17 @@ function GridNavData:CreateOverhangGrid()
         for x = 0, overhangGridSizeX - 1, 1 do
             for y = 0, overhangGridSizeY - 1, 1 do
                 local nodePoint = overhangBottomLeft +
-                Vector(x * self.nodeSize + self.halfNodeSize, y * self.nodeSize + self.halfNodeSize)
+                    Vector(x * self.nodeSize + self.halfNodeSize, y * self.nodeSize + self.halfNodeSize)
                 local traversable = true -- Assume that the overhang grids are all traversable
                 local baseLayerGridPosX = GridNav:WorldToGridPosX(nodePoint.x) + self.nodeSize
                 local baseLayerGridPosY = GridNav:WorldToGridPosY(nodePoint.y) + self.nodeSize
+
                 if self.layer1GridArr[baseLayerGridPosX] == nil then
                     self.layer1GridArr[baseLayerGridPosX] = {}
                 end
+
                 self.layer1GridArr[baseLayerGridPosX][baseLayerGridPosY] = GenericNode(nodePoint, traversable,
-                    baseLayerGridPosX, baseLayerGridPosY, 1)
+                    baseLayerGridPosX, baseLayerGridPosY, layerNum)
             end
         end
     end
@@ -73,17 +76,14 @@ function GridNavData:LinkGridBetweenLayers()
         local entName = ent:GetName()
         if not string.find(entName, "link") then
             local linkEnt = ent:GetMoveParent()
-            DebugDrawSphere(ent:GetAbsOrigin(), Vector(0, 195, 255), 0, self.halfNodeSize, false, 9999)
-            DebugDrawSphere(linkEnt:GetAbsOrigin(), Vector(0, 195, 255), 0, self.halfNodeSize, false, 9999)
-
             local baseLayerNodePos = ent:GetAbsOrigin()
             local overhangLayerNodePos = linkEnt:GetAbsOrigin()
             local baseNode = self:GetNodeFromWorldPos(baseLayerNodePos)
             local overhangNode = self:GetNodeFromWorldPos(overhangLayerNodePos, 1)
-            
-            baseNode.linkedNodes[#baseNode.linkedNodes + 1] = overhangNode
+
+            table.insert(baseNode.linkedNodes, overhangNode)
             baseNode.isPortalNode = true
-            overhangNode.linkedNodes[#overhangNode.linkedNodes + 1] = baseNode
+            table.insert(overhangNode.linkedNodes, baseNode)
             overhangNode.isPortalNode = true
         end
     end
@@ -103,7 +103,7 @@ function GridNavData:WorldPositionToGrid(worldPos)
     local ratioY = (worldPos.y + self.worldSize.y / 2) / self.worldSize.y
     ratioX = mathUtils.clamp01(ratioX)
     ratioY = mathUtils.clamp01(ratioY)
-    
+
     return Vector(
         mathUtils.roundToInt((self.gridSizeX - 1) * ratioX),
         mathUtils.roundToInt((self.gridSizeY - 1) * ratioY),
@@ -118,17 +118,19 @@ function GridNavData:GetNeighbors(node)
             if x == 0 and y == 0 then
                 goto continue
             end
-            
+
             local scanX = node.gridPosX + x
             local scanY = node.gridPosY + y
 
-            -- Neighbor in base navmesh
             if scanX >= 0 and scanX < self.gridSizeX and
                 scanY >= 0 and scanY < self.gridSizeY then
+                -- Neighbor if the node is in base navmesh
                 if node.navmeshLayer == 0 then
                     table.insert(neighbors, self.gridArr[scanX][scanY])
+                -- Neighbor if the node is in overhang navmesh
                 elseif node.navmeshLayer == 1 and
-                    self.layer1GridArr[scanX] ~= nil and self.layer1GridArr[scanX][scanY] ~= nil then
+                    self.layer1GridArr[scanX] ~= nil and
+                    self.layer1GridArr[scanX][scanY] ~= nil then
                     table.insert(neighbors, self.layer1GridArr[scanX][scanY])
                 end
             end
@@ -158,14 +160,29 @@ function GridNavData:DebugDrawGrid()
     for i, value in pairs(self.gridArr) do
         for j, node in pairs(value) do
             local boxColor = node.gridTraversable and Vector(66, 245, 72) or Vector(247, 64, 47)
-            DebugDrawCircle(GetGroundPosition(node.worldPosition, nil), boxColor, 0, self.halfNodeSize, false, 9999)
+            local rectSize = self.halfNodeSize - 7
+            local groundPos = GetGroundPosition(node.worldPosition, nil)
+            local bottomPos = Vector(groundPos.x - rectSize, groundPos.y - rectSize, groundPos.z)
+            local topPos = Vector(groundPos.x + rectSize, groundPos.y + rectSize, groundPos.z)
+            DebugDrawLine_vCol(bottomPos, bottomPos + rectSize * 2 * Vector(1, 0, 0), boxColor, false, 9999)
+            DebugDrawLine_vCol(bottomPos, bottomPos + rectSize * 2 * Vector(0, 1, 0), boxColor, false, 9999)
+            DebugDrawLine_vCol(topPos, topPos + rectSize * 2 * Vector(-1, 0, 0), boxColor, false, 9999)
+            DebugDrawLine_vCol(topPos, topPos + rectSize * 2 * Vector(0, -1, 0), boxColor, false, 9999)
+
+            if node.isPortalNode then
+                DebugDrawSphere(groundPos, Vector(0, 195, 255), 0, self.halfNodeSize, false, 9999)
+            end
         end
     end
 
-    for i, value in pairs(self.layer1GridArr) do
-        for j, node in pairs(value) do
+    for _, value in pairs(self.layer1GridArr) do
+        for _, node in pairs(value) do
             local boxColor = Vector(198, 27, 245)
             DebugDrawCircle(node.worldPosition, boxColor, 0, self.halfNodeSize, false, 9999)
+
+            if node.isPortalNode then
+                DebugDrawSphere(node.worldPosition, Vector(0, 195, 255), 0, self.halfNodeSize, false, 9999)
+            end
         end
     end
 end

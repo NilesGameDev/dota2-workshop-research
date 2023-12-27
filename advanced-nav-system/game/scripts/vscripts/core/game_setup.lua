@@ -12,7 +12,7 @@ function GameSetup:init()
     if IsInToolsMode() then --debug build
         --skip all the starting game mode stages e.g picking screen, showcase, etc
         GameRules:EnableCustomGameSetupAutoLaunch(true)
-        -- GameRules:SetCustomGameSetupAutoLaunchDelay(0)
+        GameRules:SetCustomGameSetupAutoLaunchDelay(0)
         GameRules:SetHeroSelectionTime(0)
         GameRules:SetStrategyTime(0)
         GameRules:SetPreGameTime(0)
