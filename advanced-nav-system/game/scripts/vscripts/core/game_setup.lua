@@ -10,6 +10,8 @@ local forceHero = "antimage"
 
 function GameSetup:init()
     if IsInToolsMode() then --debug build
+        collectgarbage("collect")
+
         --skip all the starting game mode stages e.g picking screen, showcase, etc
         GameRules:EnableCustomGameSetupAutoLaunch(true)
         GameRules:SetCustomGameSetupAutoLaunchDelay(0)
@@ -52,6 +54,7 @@ end
 function GameSetup:LinkModifiers()
     LinkLuaModifier("modifier_bridge_crossing", "modifiers/modifier_bridge_crossing.lua", LUA_MODIFIER_MOTION_NONE)
     LinkLuaModifier("modifier_static_object", "modifiers/modifier_static_object.lua", LUA_MODIFIER_MOTION_NONE)
+    LinkLuaModifier("modifier_advanced_pathing", "modifiers/modifier_advanced_pathing.lua", LUA_MODIFIER_MOTION_NONE)
 end
 
 function GameSetup:RegisterCustomEvents()

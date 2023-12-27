@@ -24,6 +24,7 @@ function CAdvancedNavSystem:BindUnit(targetUnit)
     end
     self.navUnit = targetUnit
     self.navUnit.moveSpeed = 400 -- Find a better way to assign speed to unit
+    self.navUnit:AddNewModifier(nil, nil, "modifier_advanced_pathing", nil)
     self.navUnit:SetThink("OnThinkNavigating", self, "OnThinkNavigating", 0)
 end
 
@@ -76,8 +77,8 @@ function CAdvancedNavSystem:SetTargetPoint(targetPosition)
     local startPosition = self.navUnit:GetAbsOrigin()
     self._pathPosition = 0
     self._pathLength = 0
-    self._path = self.aStar:FindPath(startPosition, targetPosition) -- add coroutine with callback? for better perf
     self._targetPos = targetPosition
+    self._path = self.aStar:FindPath(startPosition, targetPosition) -- add coroutine with callback? for better perf
 
     if self._path ~= nil then
         self.navUnit:FadeGesture(ACT_DOTA_IDLE)
