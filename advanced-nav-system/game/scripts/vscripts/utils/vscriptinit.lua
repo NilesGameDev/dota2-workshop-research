@@ -170,6 +170,7 @@ ScriptDebugDefaultWatchColor =
 ScriptDebugText = {}
 
 ScriptDebugTextIndent = 0
+print_indent = 0
 
 ScriptDebugTextFilters = {}
 
@@ -484,7 +485,11 @@ function ScriptDebugTextPrint(text, color, isWatch)
     end
     
     -- Console
-    print(text .. " " .. timeString)
+    local printIndent = ""
+    for _ = 1, print_indent, 1 do
+        printIndent = printIndent .. "  "
+    end
+    print(printIndent .. text .. " " .. timeString)
 end
 
 
@@ -559,18 +564,24 @@ function ScriptDebugHook(type, file, line, funcname)
             end
             
             -- Screen overlay
-            local timeString = string.format("(%0.2f) ", Time())
-            local debugString = timeString .. indentString .. functionString
             ScriptDebugTextPrint(functionString)
             ScriptDebugTextIndent = ScriptDebugTextIndent + 1
             
             -- Console
-            print("{")
-            -- print_indent = print_indent + 1
+            local printIndent = ""
+            for _ = 1, print_indent, 1 do
+                printIndent = printIndent .. "  "
+            end
+            print(printIndent .. "{")
+            print_indent = print_indent + 1
         else 
             ScriptDebugTextIndent = ScriptDebugTextIndent - 1
-            -- print_indent = print_indent - 1
-            print("}")
+            print_indent = print_indent - 1
+            local printIndent = ""
+            for _ = 1, print_indent, 1 do
+                printIndent = printIndent .. "  "
+            end
+            print(printIndent .. "}")
             
             if ScriptDebugTextIndent == 0 then 
                 ScriptDebugExpandWatches()
@@ -592,7 +603,7 @@ function BeginScriptDebug()
         local debugInfo = debug.getinfo(2)
         local type = string.sub(event, 1, 1)
         local file = debugInfo.short_src
-        local line = debugInfo.currentline
+        local line = debugInfo.linedefined
         if type == 'r' then
             line = debugInfo.lastlinedefined
         end
@@ -604,7 +615,7 @@ end
 
 
 function EndScriptDebug()
-    debug.sethook() 
+    debug.sethook()
 end
 
 

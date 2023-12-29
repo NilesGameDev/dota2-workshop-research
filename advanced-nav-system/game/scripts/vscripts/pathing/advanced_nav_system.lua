@@ -28,7 +28,7 @@ function CAdvancedNavSystem:BindUnit(targetUnit)
     self.navUnit:SetThink("OnThinkNavigating", self, "OnThinkNavigating", 0)
 end
 
-function CAdvancedNavSystem:OnThinkNavigating() -- return 0.03 to mimic perframe
+function CAdvancedNavSystem:OnThinkNavigating()
     local currentPos = self.navUnit:GetAbsOrigin()
     local targetPos = self._targetPos
 
@@ -118,7 +118,6 @@ function CAdvancedNavSystem:_AddCustomNavDebugConvars()
     ScriptDebugAddTextFilter("class")
     ScriptDebugAddTextFilter("type")
     ScriptDebugAddTextFilter("require")
-    ScriptDebugAddTextFilter("GetAbsOrigin")
     ScriptDebugAddTextFilter("sethook")
     ScriptDebugAddTextFilter("print")
     ScriptDebugAddTextFilter("State_Get")
@@ -129,11 +128,12 @@ function CAdvancedNavSystem:_AddCustomNavDebugConvars()
     ScriptDebugAddTextFilter("DeepPrintTable")
     ScriptDebugAddTextFilter("insert")
     ScriptDebugAddTextFilter("__index")
-    ScriptDebugAddTextFilter("VectorDistance")
-    ScriptDebugAddTextFilter("VectorDistanceSq")
-    ScriptDebugAddTextFilter("StartGesture")
-    ScriptDebugAddTextFilter("FadeGesture")
     ScriptDebugAddTextFilter("OnThinkNavigating")
+    ScriptDebugAddTextFilter("mathutils.lua")
+    ScriptDebugAddTextFilter("heap.lua")
+    ScriptDebugAddTextFilter("class.lua")
+    ScriptDebugAddTextFilter("for generator")
+    ScriptDebugAddTextFilter("[C](-1)")
 end
 
 function CAdvancedNavSystem:_OnUnitOrderFilter(args)
