@@ -186,3 +186,84 @@ function GridNavData:DebugDrawGrid()
         end
     end
 end
+
+function GridNavData:LineOfSight(nodeA, nodeB)
+    local x1 = nodeA.gridPosX
+    local x2 = nodeB.gridPosX
+    local y1 = nodeA.gridPosY
+    local y2 = nodeB.gridPosY
+
+    local deltaX = x2 - x1
+    local deltaY = y2 - y1
+
+    local temp = 0
+
+    local signX = 1
+    local signY = 1
+    local offsetX = 0
+    local offsetY = 0
+
+    if deltaY < 0 then
+        deltaY = -deltaY
+        signY = -1
+        offsetY = -1
+    end
+    if deltaX < 0 then
+        deltaX = -deltaX
+        signX = -1
+        offsetX = -1
+    end
+
+    if deltaX >= deltaY then
+        while x1 ~= x2 do
+            temp = temp + deltaY
+            if temp >= deltaX then
+                if self:_IsBlocked(x1 + offsetX, y1 + offsetY) then
+                    return false
+                end
+                y1 = y1 + signY
+                temp = temp - deltaX
+            end
+            if temp ~= 0 and self:_IsBlocked(x1 + offsetX, y1 + offsetY) then
+                return false
+            end
+            if deltaY == 0 and self:_IsBlocked(x1 + offsetX, y1) and self:_IsBlocked(x1 + offsetX, y1 - 1) then
+                return false
+            end
+
+            x1 = x1 + signX
+        end
+    else
+        while y1 ~= y2 do
+            temp = temp + deltaX
+            if temp >= deltaY then
+                if self:_IsBlocked(x1 + offsetX, y1 + offsetX) then
+                    return false
+                end
+                x1 = x1 + signX
+                temp = temp - deltaY
+            end
+            if temp ~= 0 and self:_IsBlocked(x1 + offsetX, y1 + offsetY) then
+                return false
+            end
+            if deltaX == 0 and self:_IsBlocked(x1, y1 + offsetY) and self:_IsBlocked(x1 - 1, y1 + offsetY) then
+                return false
+            end
+
+            y1 = y1 + signY
+        end
+    end
+
+    return true
+end
+
+function GridNavData:_IsBlocked(x, y)
+    if x >= self.worldSize.x or y >= self.worldSize.y then
+        return true
+    end
+    if x < 0 or y < 0 then
+        return true
+    end
+
+    return self.gridArr[x][y].gridTraversable
+end

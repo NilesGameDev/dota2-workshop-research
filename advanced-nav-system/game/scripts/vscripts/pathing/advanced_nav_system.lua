@@ -105,12 +105,35 @@ function CAdvancedNavSystem:_BuildMultiGridMesh()
 
     -- For debugging
     self.grid:DebugDrawWorldBound()
-    self.grid:DebugDrawGrid()
+    -- self.grid:DebugDrawGrid()
 end
 
 function CAdvancedNavSystem:_AddCustomNavDebugConvars()
-    -- TODO: implement this functions
-    -- RegisterCommand(name, fn, helpString, flags)
+    ScriptDebugAddTextFilter("contains")
+    ScriptDebugAddTextFilter("Vectors")
+    ScriptDebugAddTextFilter("constructor")
+    ScriptDebugAddTextFilter("setmetatable")
+    ScriptDebugAddTextFilter("pairs")
+    ScriptDebugAddTextFilter("__add")
+    ScriptDebugAddTextFilter("class")
+    ScriptDebugAddTextFilter("type")
+    ScriptDebugAddTextFilter("require")
+    ScriptDebugAddTextFilter("GetAbsOrigin")
+    ScriptDebugAddTextFilter("sethook")
+    ScriptDebugAddTextFilter("print")
+    ScriptDebugAddTextFilter("State_Get")
+    ScriptDebugAddTextFilter("format")
+    ScriptDebugAddTextFilter("tostring")
+    ScriptDebugAddTextFilter("getmetatable")
+    ScriptDebugAddTextFilter("find")
+    ScriptDebugAddTextFilter("DeepPrintTable")
+    ScriptDebugAddTextFilter("insert")
+    ScriptDebugAddTextFilter("__index")
+    ScriptDebugAddTextFilter("VectorDistance")
+    ScriptDebugAddTextFilter("VectorDistanceSq")
+    ScriptDebugAddTextFilter("StartGesture")
+    ScriptDebugAddTextFilter("FadeGesture")
+    ScriptDebugAddTextFilter("OnThinkNavigating")
 end
 
 function CAdvancedNavSystem:_OnUnitOrderFilter(args)

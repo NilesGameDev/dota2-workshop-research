@@ -97,9 +97,29 @@ function AStarPathing:_RetracePath(startNode, endNode)
     local path = {}
     local currentNode = endNode
 
-    while currentNode.nodeId ~= startNode.nodeId do
+    while currentNode ~= nil do
+        -- local nextNode = currentNode.parentNode
+        -- if nextNode ~= nil then
+        --     nextNode = nextNode.parentNode
+        --     while nextNode ~= nil do
+        --         if true and nextNode.parentNode ~= nil then
+        --             nextNode = nextNode.parentNode
+        --         else
+        --             break
+        --         end
+        --     end
+            
+        --     if nextNode ~= nil and currentNode.parentNode.nodeId ~= nextNode.nodeId then
+        --         currentNode.parentNode = nextNode
+        --     end
+        -- end
+
         table.insert(path, currentNode)
         currentNode = currentNode.parentNode
+
+        if currentNode.nodeId == startNode.nodeId then
+            break
+        end
     end
 
     local waypoints = self:_SimplifyPath(path)
@@ -112,14 +132,14 @@ function AStarPathing:_SimplifyPath(path)
 
     for i = 2, #path, 1 do
         local newDirection = Vector(path[i - 1].gridPosX - path[i].gridPosX, path[i - 1].gridPosY - path[i].gridPosY, 0)
-        if newDirection ~= prevDirection then
+        -- if newDirection ~= prevDirection then
             local groundPos = path[i].worldPosition
             if path[i].navmeshLayer == 0 then
                 groundPos = GetGroundPosition(groundPos, nil)
             end
 
             table.insert(waypoints, groundPos)
-        end
+        -- end
 
         prevDirection = newDirection
     end

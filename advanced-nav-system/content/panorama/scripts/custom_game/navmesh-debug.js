@@ -22,5 +22,5 @@ function startDetectingMousePos() {
     perFrameMousePos = $.Schedule(0.03, startDetectingMousePos);
 }
 
-startDetectingMousePos();
+// startDetectingMousePos();
 GameEvents.Subscribe("GridNavData", gridNavDataEventListener);
